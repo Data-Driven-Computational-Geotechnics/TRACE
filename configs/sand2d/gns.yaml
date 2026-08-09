@@ -1,0 +1,32 @@
+# GNS baseline (node velocity-history memory) — 2D sand-column collapse, dataset 008-Sand
+# Run:     python ../../model/02-gns/train.py --config gns/config/gns.yaml
+# Outputs: 02-gns/results/gns_sand2d_node/<timestamp>/{train.log, best_model.pt}  (由 results_dirname 决定)
+
+# ── run ──────────────────────────────────────────────────────────────────────
+exp_name: "gns_sand2d_node"     # {method}_{benchmark}_{variant} → output folder prefix
+model_name: "gns"               # which model package (model/02-gns); don't change
+results_dirname: "02-gns"       # 输出落到 02-gns/results/(带编号的项目文件夹), 不是默认的 gns/
+gpu: [1]                        # GPU id(s); [] or null → inherit CUDA_VISIBLE_DEVICES
+seed: 0
+results_path: "."               # outputs created under here (run.sh cd's into experiment dir)
+
+# ── data ─────────────────────────────────────────────────────────────────────
+dataset_root: "datasets/008-Sand-2D"   # train.h5 / valid.h5 / metadata.json
+n_train: 512                    # training trajectories (== Trace pretraining pool, fair comparison)
+n_val: 16                       # validation trajectories (pick best checkpoint; == Trace)
+
+# ── geometry ─────────────────────────────────────────────────────────────────
+radius: 0.0036                  # particle radius (~ half the median nearest-neighbour spacing)
+skin_factor: null               # null = auto from dataset connectivity radius
+
+# ── model (node history) ─────────────────────────────────────────────────────
+n_history: 5                    # velocity-history length = GNS's node-level memory
+hidden_dim: 128                 # latent width (== Trace)
+num_layers: 8                   # Graph-Network processor blocks (== Trace processor depth, matched capacity)
+
+# ── training ─────────────────────────────────────────────────────────────────
+epochs: 200                     # passes over the training set (cheap, no BPTT; watch val curve)
+samples_per_traj: 6             # random time samples per optimizer step (no BPTT)
+val_rollout: 100                # rollout length for the validation MSE (checkpoint selection)
+lr: 3.0e-4                      # AdamW lr (warmup + cosine decay)
+noise: 3.0e-4                   # GNS input-noise std (~ per-step velocity scale)

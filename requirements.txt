@@ -1,0 +1,7 @@
+torch>=2.1
+torch-geometric>=2.4
+numpy
+h5py
+pyyaml
+matplotlib
+pillow
